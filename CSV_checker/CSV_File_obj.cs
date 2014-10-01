@@ -301,7 +301,7 @@ namespace CSV_checker
             is_initialized = true;
             
             string[] fpath_a = fpath.Split(new char[]{'\\'});
-            fname = fpath_a[fpath_a.Length - 1];
+            fname = fpath_a.Last();
 
             get_header_ff();
             
@@ -529,18 +529,38 @@ namespace CSV_checker
                 if (a_index == package_ID_index)
                 {
                     has_error = illegal_package_id_rx.IsMatch(a_field);
+
+                    if (has_error)
+                    {
+                        num_illegal_chars++;
+                    }
                 }
                 else if (a_index == name_index)
                 {
                     has_error = illegal_name_chars_rx.IsMatch(a_field);
+
+                    if (has_error)
+                    {
+                        num_illegal_chars++;
+                    }
                 }
                 else if (a_index == address_index || a_index == address_index + 1 || a_index == city_index)
                 {
                     has_error = illegal_chars_rx.IsMatch(a_field);
+
+                    if (has_error)
+                    {
+                        num_illegal_chars++;
+                    }
                 }
                 else if (a_index == state_index)
                 {
                     has_error = !legal_state_code_rx.IsMatch(a_field);
+                    
+                    if (has_error)
+                    {
+                        num_bad_format++;
+                    }
                 }
                 else if (a_index == zipcode_index)
                 {
@@ -549,16 +569,25 @@ namespace CSV_checker
                 else if (a_index == country_index)
                 {
                     has_error = (a_field == "US") ? false : true;
+                    
+                    if (has_error)
+                    {
+                        num_bad_format++;
+                    }
                 }
                 else
                 {
                     has_error = illegal_chars_rx.IsMatch(a_field);
+
+                    if (has_error)
+                    {
+                        num_illegal_chars++;
+                    }
                 }
             }
 
             if (has_error)
             {
-                num_illegal_chars++;
                 num_errors++;
                 return true;
             }

@@ -250,25 +250,26 @@ namespace CSV_checker
             //success message
             if (input_file.num_errors == 0)
             {
-                txtbox_file_errors.Text += "******* Number Of Errors: " + input_file.num_errors + " *******" + Environment.NewLine;
+                txtbox_file_errors.Text = "******* Number Of Errors: 0 *******" + Environment.NewLine;
                 MessageBox.Show("No errors found.");
             }
             //error message
             else
             {
-                txtbox_file_errors.Text += "******* Number Of Errors: " + input_file.num_errors + " *******" + Environment.NewLine;
+                txtbox_file_errors.Text = "******* Number Of Errors: " + input_file.num_errors + " *******" + Environment.NewLine;
                 MessageBox.Show(input_file.num_errors + " errors found.");
             }
             
             //display a summary in the status box
             txtbox_status.Text = "Total Errors Found: " + input_file.num_errors.ToString()
                                 + ((!input_file.has_correct_header) ? " | Incorrect Header " : "")
-                                + " | " + input_file.num_illegal_chars + " format errors(s)"
+                                + " | " + input_file.num_bad_format + " format errors(s)"
+                                + " | " + input_file.num_illegal_chars + " special character(s)"
                                 + "; " + input_file.num_bad_zipcodes + " are bad zip code(s)"
                                 + " | " + input_file.num_over40_chars + " fields over 40 char(s)"
                                 + " | " + input_file.num_missing_fields + " mandatory field(s) missing";
             txtbox_status.Refresh();
-
+            
             
             txtbox_file_errors.Text += Environment.NewLine + "***** File Format Information: *****" + Environment.NewLine;
             foreach (string item in format_report)
@@ -277,10 +278,18 @@ namespace CSV_checker
             }
 
             txtbox_file_errors.Text += Environment.NewLine + "***** Data Errors: *****" + Environment.NewLine;
+            txtbox_file_errors.Text += input_file.num_bad_format + " item(s) formatted wrong." + Environment.NewLine
+                                     + input_file.num_illegal_chars + " field(s) with special character(s)." + Environment.NewLine
+                                     + input_file.num_bad_zipcodes + " zip code(s) missing zeros or formatted wrong." + Environment.NewLine
+                                     + input_file.num_over40_chars + " field(s) are over 40 char(s)." + Environment.NewLine
+                                     + input_file.num_missing_fields + " mandatory field(s) missing." + Environment.NewLine;
+
+            /*
+            txtbox_file_errors.Text += Environment.NewLine + "***** Data Errors: *****" + Environment.NewLine;
             foreach (string item in data_report)
             {
                 txtbox_file_errors.Text += item;
-            }
+            }*/
         }
 
         private void txtbox_selected_file_TextChanged(object sender, EventArgs e)

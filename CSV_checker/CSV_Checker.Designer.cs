@@ -77,7 +77,7 @@
             this.txtbox_file_errors.Name = "txtbox_file_errors";
             this.txtbox_file_errors.ReadOnly = true;
             this.txtbox_file_errors.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtbox_file_errors.Size = new System.Drawing.Size(660, 206);
+            this.txtbox_file_errors.Size = new System.Drawing.Size(660, 260);
             this.txtbox_file_errors.TabIndex = 3;
             this.txtbox_file_errors.TextChanged += new System.EventHandler(this.txtbox_file_errors_TextChanged);
             // 
@@ -90,17 +90,17 @@
             // 
             this.txtbox_status.AcceptsTab = true;
             this.txtbox_status.BackColor = System.Drawing.SystemColors.Control;
-            this.txtbox_status.Location = new System.Drawing.Point(112, 256);
+            this.txtbox_status.Location = new System.Drawing.Point(12, 310);
             this.txtbox_status.Name = "txtbox_status";
             this.txtbox_status.ReadOnly = true;
-            this.txtbox_status.Size = new System.Drawing.Size(660, 20);
+            this.txtbox_status.Size = new System.Drawing.Size(760, 20);
             this.txtbox_status.TabIndex = 4;
             // 
             // frm_CSV_checker
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(784, 283);
+            this.ClientSize = new System.Drawing.Size(784, 342);
             this.Controls.Add(this.txtbox_status);
             this.Controls.Add(this.txtbox_file_errors);
             this.Controls.Add(this.txtbox_selected_file);
