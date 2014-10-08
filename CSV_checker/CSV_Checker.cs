@@ -50,8 +50,14 @@ namespace CSV_checker
         private void btn_check_errors_Click(object sender, EventArgs e)
         {
             List<string> format_report = new List<string>();
-            List<string> data_report = new List<string>();
-
+            List<string> sample_errors = new List<string>();
+            bool[] added_sample_error_array = {false, false, false, false, false};
+            string[,] error_descriptions = { {"Format Error" , "does not have a valid format"}, 
+                                             {"Special Character" , "has special characters"},
+                                             {"Zipcode Error" , "is not a correctly formatted zipcode"},
+                                             {"Record Too Long","is over 40 characters"},
+                                             {"Mandatory Field Missing","This field cannot be blank"} };
+            bool[] error_array = new bool[5]; //Stores the result from the multi error check
             string current_field;
             CSV_File input_file;
             
@@ -68,10 +74,10 @@ namespace CSV_checker
                 return;
             }
            
-            //check for errors
-
-            //MessageBox.Show("Checking file for errors.");
-
+            ////////////////
+            //////Starting to check for errors here
+            //
+            
             //clear the error text box
             txtbox_file_errors.Text = "";
 
@@ -123,7 +129,7 @@ namespace CSV_checker
                     while (index < correct_length)
                     {
                         //temporarily rename field to "(Empty Field)" if blank
-                        title = (String.IsNullOrWhiteSpace(input_file.header_a[index])) ? "(Empty Title)" : input_file.header_a[index];
+                        //title = (String.IsNullOrWhiteSpace(input_file.header_a[index])) ? "(Empty Title)" : input_file.header_a[index];
 
                         format_report.Add( "-> [" + index + "] : field missing. The title should be: " 
                                                 + input_file.correct_header_a[index] + Environment.NewLine);
@@ -168,9 +174,6 @@ namespace CSV_checker
                 format_report.Add( "Header is correctly formatted." + Environment.NewLine);
             }
 
-            //declare an array to store the array from the multi error checker
-            bool[] error_array = new bool[3];
-
             //open the csv file to be checked
             StreamReader reader = new StreamReader(input_file.fpath);
 
@@ -184,7 +187,7 @@ namespace CSV_checker
             //read/check each line
             do
             {
-                //read the line, store in memory
+                //read the line, store in memory as string and array
                 input_file.current_line_s = reader.ReadLine();
                 input_file.current_line_to_a();
                 
@@ -199,34 +202,34 @@ namespace CSV_checker
                     current_field = input_file.current_line_a[index];
                     
                     //copy the result from the error check
-                    Array.Copy(input_file.multi_error_check(index, current_field), error_array, 3);
+                    Array.Copy(input_file.multi_error_check(index, current_field), error_array, 5);
 
-                    //display error mesage if field has a special character
-                    if ( error_array[0] )
+                    //Add sample errors, once for each type of error
+                    for (int error_type = 0; error_type < 4; error_type++)
                     {
-                        data_report.Add( "ERROR on entry #" + line_num + ", field: \"" + input_file.header_a[index] +
-                                         ".\" Field has a special character, or formatted incorrectly" + Environment.NewLine +
-                                         "(" + input_file.header_a[index] + ": " + input_file.current_line_a[index] + ")" +
-                                         Environment.NewLine + Environment.NewLine );
+                        if(!added_sample_error_array[error_type] && error_array[error_type])
+                        {
+                            sample_errors.Add( String.Format("{0}, on line {1}, in the '{2}' column. '{3}'\0{4}.",
+                                               error_descriptions[error_type, 0],
+                                               line_num.ToString(),
+                                               input_file.header_a[index], 
+                                               current_field,
+                                               error_descriptions[error_type, 1]) );
+                            added_sample_error_array[error_type] = true;
+                                                                          
+                        }
+                        if(!added_sample_error_array[4] && error_array[4])
+                        {
+                            sample_errors.Add(String.Format("{0}, on line {1}, in the '{2}' column. {3}.",
+                                                  error_descriptions[4, 0],
+                                                  line_num.ToString(),
+                                                  input_file.header_a[index],
+                                                  error_descriptions[4, 1]));
+                            added_sample_error_array[4] = true;
 
+                        }
                     }
 
-                    //display error message if the field is over 40 chars
-                    if (error_array[1])
-                    {
-                        data_report.Add( "ERROR on entry #" + line_num + ", field: \"" + input_file.header_a[index] + 
-                                         ".\" Field has over 40 characters." + Environment.NewLine +
-                                         "(" + input_file.header_a[index] + ": " + current_field + ")" +
-                                         Environment.NewLine + Environment.NewLine );
-                    }
-
-                    //display an error message if the field is missing and mandatory
-                    if (error_array[2])
-                    {
-                        data_report.Add( "ERROR on entry #" + line_num + ", field: \"" + input_file.header_a[index] + 
-                                         ".\" Mandatory field is missing." + Environment.NewLine + Environment.NewLine );
-                    }
-                    
                 }
 
                
@@ -263,33 +266,36 @@ namespace CSV_checker
             //display a summary in the status box
             txtbox_status.Text = "Total Errors Found: " + input_file.num_errors.ToString()
                                 + ((!input_file.has_correct_header) ? " | Incorrect Header " : "")
-                                + " | " + input_file.num_bad_format + " format errors(s)"
+                                + " | " + input_file.num_bad_format + " general data errors(s)"
                                 + " | " + input_file.num_illegal_chars + " special character(s)"
                                 + "; " + input_file.num_bad_zipcodes + " are bad zip code(s)"
                                 + " | " + input_file.num_over40_chars + " fields over 40 char(s)"
                                 + " | " + input_file.num_missing_fields + " mandatory field(s) missing";
             txtbox_status.Refresh();
-            
-            
-            txtbox_file_errors.Text += Environment.NewLine + "***** File Format Information: *****" + Environment.NewLine;
+
+
+            txtbox_file_errors.Text += Environment.NewLine + "***** File Format Information: *****" + Environment.NewLine + Environment.NewLine;
             foreach (string item in format_report)
             {
                 txtbox_file_errors.Text += item;
             }
 
-            txtbox_file_errors.Text += Environment.NewLine + "***** Data Errors: *****" + Environment.NewLine;
-            txtbox_file_errors.Text += input_file.num_bad_format + " item(s) formatted wrong." + Environment.NewLine
+            txtbox_file_errors.Text += Environment.NewLine + "***** Data Error Report: *****" + Environment.NewLine + Environment.NewLine;
+            txtbox_file_errors.Text += input_file.num_bad_format + " item(s) with general data errors." + Environment.NewLine
                                      + input_file.num_illegal_chars + " field(s) with special character(s)." + Environment.NewLine
                                      + input_file.num_bad_zipcodes + " zip code(s) missing zeros or formatted wrong." + Environment.NewLine
                                      + input_file.num_over40_chars + " field(s) are over 40 char(s)." + Environment.NewLine
                                      + input_file.num_missing_fields + " mandatory field(s) missing." + Environment.NewLine;
 
-            /*
-            txtbox_file_errors.Text += Environment.NewLine + "***** Data Errors: *****" + Environment.NewLine;
-            foreach (string item in data_report)
+            if (chkbox_sample_errors.Checked)
             {
-                txtbox_file_errors.Text += item;
-            }*/
+                txtbox_file_errors.Text += Environment.NewLine + "***** Sample Errors: *****" + Environment.NewLine + Environment.NewLine;
+                foreach (string item in sample_errors)
+                {
+                    txtbox_file_errors.Text += item;
+                    txtbox_file_errors.Text += Environment.NewLine + Environment.NewLine;
+                }
+            }
         }
 
         private void txtbox_selected_file_TextChanged(object sender, EventArgs e)

@@ -1,4 +1,16 @@
-﻿using System;
+﻿////////////////////////////////////////
+// CSV_File Object Definition File    
+// Author & Owner: Eric Yablunosky    
+// 
+// This object contains a toolkit for analyzing a CSV File
+// Contains methods to store CSV headers and a single line
+// Headers and Lines are stored in both array and string format
+// Checks for multiple format errors within a file
+//
+////////////////////////////////////////
+
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -52,15 +64,18 @@ namespace CSV_checker
                                                                      "State","Zip","Country",
                                                                      "Cost Center Id","Reference 1","Reference 2",
                                                                      "Reference 3","Reference 4"};
-        
 
-        private Regex _illegal_package_id_rx = new Regex(@"^[\.-]|[\?\$\)\(\*\^\+""\\<>,#@&%!='`]" ,RegexOptions.Compiled);
-        private Regex _illegal_name_chars_rx = new Regex(@"[^a-zA-Z\.\-' ]", RegexOptions.Compiled);
-        private Regex _legal_state_code_rx = new Regex(@"^[A-Z]{2}$" ,RegexOptions.Compiled);
-        private Regex _legal_zipcode_chars_rx = new Regex(@"^\d{5}$" ,RegexOptions.Compiled);
-        private Regex _legal_long_zipcode_chars_rx = new Regex(@"^\d{5}\-\d{4}$" ,RegexOptions.Compiled);
+        //Tests for single records w/commas surrouinded by quotes
+        private Regex _CSV_delimeter_rx = new Regex(@",(?=(?:[^""']|[""|'][^""']*""|""[^""]*(\\.[^""]*)*"")*$)", RegexOptions.Compiled); 
+        
+        //data validation checks
+        private Regex _illegal_package_id_rx = new Regex(@"^[\.-]|[\?\$\)\(\*\^\+""\\<>,#@&%!='`]" ,RegexOptions.Compiled); //Characters not allowed in Package IDs
+        private Regex _illegal_name_chars_rx = new Regex(@"[^a-zA-Z\.\-' ]", RegexOptions.Compiled);                //Characters not allowed in names
+        private Regex _legal_state_code_rx = new Regex(@"^[A-Z]{2}$" ,RegexOptions.Compiled);                       //invalid state format
+        private Regex _legal_zipcode_chars_rx = new Regex(@"^\d{5}$" ,RegexOptions.Compiled);                       //invalid zip code format
+        private Regex _legal_long_zipcode_chars_rx = new Regex(@"^\d{5}\-\d{4}$" ,RegexOptions.Compiled);           //invalid zip+4 format
         //private Regex _legal_country_code_rx = "US";
-        private Regex _illegal_chars_rx = new Regex(@"[^\p{IsBasicLatin}]" ,RegexOptions.Compiled);
+        private Regex _illegal_chars_rx = new Regex(@"[^\p{IsBasicLatin}]" ,RegexOptions.Compiled);                 //Default Illegal Character Set (not basic latin)
         
         /////
         ///Public constructors, getters/setters, methods and member functions start here
@@ -162,8 +177,12 @@ namespace CSV_checker
             set { _current_line_a = value; }
             get { return _current_line_a; }
         }
-        
-                        
+
+        public Regex CSV_delimeter_rx
+        {
+            get { return _CSV_delimeter_rx; }
+        } 
+           
         public Regex illegal_package_id_rx
         {
             get { return _illegal_package_id_rx; }
@@ -380,20 +399,45 @@ namespace CSV_checker
         //converts header string to an array
         public void header_to_a()
         {
+            header_a = CSV_delimeter_rx.Split(header_s.Trim('\"'));
+
+
+            for (long index = 0; index < header_a.LongLength; index++)
+            {
+                header_a[index] = header_a[index].Trim('\"');
+            }
+            /*
             if (_has_quotes)
             {
                 header_a = header_s.Trim(CSV_trim_char).Split(CSV_quote_delimiter, StringSplitOptions.None);
             }
             else
             {
-                header_a = header_s.Split(CSV_comma_delimiter);
-            }
+                if (!quoted_record_rx.IsMatch(header_s))
+                {
+                    header_a = header_s.Split(CSV_comma_delimiter);
+                }
+                else
+                {
+                    //finds data in records with quoted commas, and temporarily removes them for purposes of spltting
+                    header_a = header_s.Replace(quoted_record_rx.Match(header_s).ToString(), 
+                               quoted_record_rx.Match(header_s).ToString()
+                               .Replace(',', '\0')).Split(CSV_comma_delimiter);
+                }
+            }*/
         }
 
         //current_line_to_a()
         //converts the current line to an array w/ each individual field
         public void current_line_to_a()
         {
+            current_line_a = CSV_delimeter_rx.Split(current_line_s);
+
+            for (long index = 0; index < current_line_a.LongLength; index++ )
+            {
+                current_line_a[index] = current_line_a[index].Trim('\"');
+            }
+            /*
             current_line_a = null; 
             if (_has_quotes)
             {
@@ -401,8 +445,19 @@ namespace CSV_checker
             }
             else
             {
+                if (!CSV_delimeter_rx.IsMatch(current_line_s))
+                {
+                    current_line_a = current_line_s.Split(CSV_comma_delimiter);
+                }
+                else
+                {
+                    //finds data in records with quoted commas, and temporarily removes them for purposes of spltting
+                    current_line_a = current_line_s.Replace(CSV_delimeter_rx.Match(current_line_s).ToString(),
+                                     CSV_delimeter_rx.Match(current_line_s).ToString()
+                                     .Replace(',', '\0')).Split(CSV_comma_delimiter);
+                }
                 current_line_a = current_line_s.Split(CSV_comma_delimiter);
-            }
+            }*/
         }
         
         //find_special_indices()
@@ -468,7 +523,7 @@ namespace CSV_checker
                             country_index = Array.IndexOf(header_a, field);
                         }
                     }
-                    else if (field.Trim().ToLower().Contains("zip"))
+                    else if (field.Trim().ToLower().Contains("zi"))
                     {
                         if (zipcode_index == -1)
                         {
@@ -486,8 +541,10 @@ namespace CSV_checker
             }
         }
 
+
+
         //void rewrite_array(string[] old_array, string[] new_array)
-        //rewrites the old_array to the new array
+        //rewrites old_array to new_array
         public void rewrite_array(string[] old_array, string[] new_array)
         {
             if (old_array.Length < new_array.Length)
@@ -503,15 +560,61 @@ namespace CSV_checker
         }
 
         //bool[] multi_error_check(int a_index, string a_entry)
-        //single function which checks for three different error types : { illegal characters/format, over 40 chars, missing mandatory field }
+        //single function which checks for five different error types : 
+        //{ illegal format, illegal chars, bad zipcode, over 40 chars, missing mandatory field }
         //returns an array of bool's, one col for each check. true return if an error is found.
         public bool[] multi_error_check(int a_index, string a_entry)
         {
-            bool[] error_array = new bool[3];
-            error_array[0] = check_ill_chars(a_index, a_entry);
-            error_array[1] = check_length(a_entry);
-            error_array[2] = missing_mandatory_field(a_index, a_entry);
+            bool[] error_array = new bool[5];
+            error_array[0] = check_format(a_index, a_entry);
+            error_array[1] = check_ill_chars(a_index, a_entry);
+            error_array[2] = (a_index == zipcode_index) ? check_zipcode(a_entry) : false;
+            error_array[3] = check_length(a_entry);
+            error_array[4] = missing_mandatory_field(a_index, a_entry);
             return error_array;
+        }
+
+        //bool check_format(int a_index, string a_field )
+        //check if the given field (a_field) has an incorrecect format for the given header col (a_index)
+        //returns true if format is wrong
+        public bool check_format(int a_index, string a_field)
+        {
+            bool has_error = false;
+
+            //first, check if isnt blank to save CPU power
+            if (!String.IsNullOrEmpty(a_field))
+            {
+                //each if statement is for a specific header column
+                //uses a specific regex for the spcific header col to see if in correct form
+                if (a_index == state_index)
+                {
+                    has_error = !legal_state_code_rx.IsMatch(a_field);
+
+                    if (has_error)
+                    {
+                        num_bad_format++;
+                    }
+                }
+                else if (a_index == country_index)
+                {
+                    has_error = (a_field == "US") ? false : true;
+
+                    if (has_error)
+                    {
+                        num_bad_format++;
+                    }
+                }
+            }
+
+            if (has_error)
+            {
+                num_errors++;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         //bool check_ill_chars(int a_index, string a_field )
@@ -529,65 +632,26 @@ namespace CSV_checker
                 if (a_index == package_ID_index)
                 {
                     has_error = illegal_package_id_rx.IsMatch(a_field);
-
-                    if (has_error)
-                    {
-                        num_illegal_chars++;
-                    }
                 }
                 else if (a_index == name_index)
                 {
                     has_error = illegal_name_chars_rx.IsMatch(a_field);
-
-                    if (has_error)
-                    {
-                        num_illegal_chars++;
-                    }
                 }
-                else if (a_index == address_index || a_index == address_index + 1 || a_index == city_index)
-                {
-                    has_error = illegal_chars_rx.IsMatch(a_field);
-
-                    if (has_error)
-                    {
-                        num_illegal_chars++;
-                    }
-                }
-                else if (a_index == state_index)
-                {
-                    has_error = !legal_state_code_rx.IsMatch(a_field);
-                    
-                    if (has_error)
-                    {
-                        num_bad_format++;
-                    }
-                }
-                else if (a_index == zipcode_index)
-                {
-                    has_error = check_zipcodes(a_field);
-                }
-                else if (a_index == country_index)
-                {
-                    has_error = (a_field == "US") ? false : true;
-                    
-                    if (has_error)
-                    {
-                        num_bad_format++;
-                    }
-                }
+                //uncoment this "else if" block to use a different regex for addresses
+                //
+                //else if (a_index == address_index || a_index == address_index + 1 || a_index == city_index)
+                //{
+                //    has_error = illegal_chars_rx.IsMatch(a_field);
+                //}
                 else
                 {
                     has_error = illegal_chars_rx.IsMatch(a_field);
-
-                    if (has_error)
-                    {
-                        num_illegal_chars++;
-                    }
                 }
             }
 
             if (has_error)
             {
+                num_illegal_chars++;
                 num_errors++;
                 return true;
             }
@@ -600,23 +664,19 @@ namespace CSV_checker
         //bool check_zipcodes( string a_zipcode )
         //Checks to see if the a given zipcode (string a_zipcode) in ##### or #####-#### form
         //returns true if zipcode has wrong format
-        public bool check_zipcodes( string a_zipcode )
+        public bool check_zipcode( string a_zipcode )
         {
-            bool check1 = _legal_zipcode_chars_rx.IsMatch(a_zipcode); //##### form
-            bool check2 = _legal_long_zipcode_chars_rx.IsMatch(a_zipcode); //#####-#### form
+            // legal_zipcode_chars_rx.IsMatch(a_zipcode) checks for ##### form
+            // legal_long_zipcode_chars_rx.IsMatch(a_zipcode) checks for #####-#### form
             
             //if (!Regex.IsMatch(a_zipcode, _legal_zipcode_chars))
-            if (check1)
-            {
-                return false;
-            }
-            //else if (!Regex.IsMatch(a_zipcode, _legal_long_zipcode_chars))
-            else if (check2)
+            if (legal_zipcode_chars_rx.IsMatch(a_zipcode) || legal_long_zipcode_chars_rx.IsMatch(a_zipcode))
             {
                 return false;
             }
             else
             {
+                num_errors++;
                 num_bad_zipcodes++;
                 return true;
             }

@@ -34,11 +34,12 @@
             this.txtbox_file_errors = new System.Windows.Forms.TextBox();
             this.ofd_CVS_selector = new System.Windows.Forms.OpenFileDialog();
             this.txtbox_status = new System.Windows.Forms.TextBox();
+            this.chkbox_sample_errors = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // btn_select_csv
             // 
-            this.btn_select_csv.Location = new System.Drawing.Point(6, 9);
+            this.btn_select_csv.Location = new System.Drawing.Point(27, 12);
             this.btn_select_csv.Name = "btn_select_csv";
             this.btn_select_csv.Size = new System.Drawing.Size(100, 23);
             this.btn_select_csv.TabIndex = 0;
@@ -48,7 +49,7 @@
             // 
             // btn_check_errors
             // 
-            this.btn_check_errors.Location = new System.Drawing.Point(6, 41);
+            this.btn_check_errors.Location = new System.Drawing.Point(27, 41);
             this.btn_check_errors.Name = "btn_check_errors";
             this.btn_check_errors.Size = new System.Drawing.Size(100, 23);
             this.btn_check_errors.TabIndex = 1;
@@ -60,7 +61,7 @@
             // 
             this.txtbox_selected_file.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.txtbox_selected_file.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtbox_selected_file.Location = new System.Drawing.Point(112, 12);
+            this.txtbox_selected_file.Location = new System.Drawing.Point(144, 12);
             this.txtbox_selected_file.Name = "txtbox_selected_file";
             this.txtbox_selected_file.ReadOnly = true;
             this.txtbox_selected_file.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
@@ -72,7 +73,7 @@
             // 
             this.txtbox_file_errors.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.txtbox_file_errors.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtbox_file_errors.Location = new System.Drawing.Point(112, 44);
+            this.txtbox_file_errors.Location = new System.Drawing.Point(144, 43);
             this.txtbox_file_errors.Multiline = true;
             this.txtbox_file_errors.Name = "txtbox_file_errors";
             this.txtbox_file_errors.ReadOnly = true;
@@ -93,14 +94,27 @@
             this.txtbox_status.Location = new System.Drawing.Point(12, 310);
             this.txtbox_status.Name = "txtbox_status";
             this.txtbox_status.ReadOnly = true;
-            this.txtbox_status.Size = new System.Drawing.Size(760, 20);
+            this.txtbox_status.Size = new System.Drawing.Size(792, 20);
             this.txtbox_status.TabIndex = 4;
+            // 
+            // chkbox_sample_errors
+            // 
+            this.chkbox_sample_errors.AutoSize = true;
+            this.chkbox_sample_errors.Checked = true;
+            this.chkbox_sample_errors.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkbox_sample_errors.Location = new System.Drawing.Point(17, 70);
+            this.chkbox_sample_errors.Name = "chkbox_sample_errors";
+            this.chkbox_sample_errors.Size = new System.Drawing.Size(121, 17);
+            this.chkbox_sample_errors.TabIndex = 5;
+            this.chkbox_sample_errors.Text = "Show Sample Errors";
+            this.chkbox_sample_errors.UseVisualStyleBackColor = true;
             // 
             // frm_CSV_checker
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(784, 342);
+            this.ClientSize = new System.Drawing.Size(816, 342);
+            this.Controls.Add(this.chkbox_sample_errors);
             this.Controls.Add(this.txtbox_status);
             this.Controls.Add(this.txtbox_file_errors);
             this.Controls.Add(this.txtbox_selected_file);
@@ -121,6 +135,7 @@
         private System.Windows.Forms.TextBox txtbox_file_errors;
         private System.Windows.Forms.OpenFileDialog ofd_CVS_selector;
         private System.Windows.Forms.TextBox txtbox_status;
+        private System.Windows.Forms.CheckBox chkbox_sample_errors;
     }
 }
 
