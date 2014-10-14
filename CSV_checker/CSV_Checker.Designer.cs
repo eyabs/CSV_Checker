@@ -35,6 +35,7 @@
             this.ofd_CVS_selector = new System.Windows.Forms.OpenFileDialog();
             this.txtbox_status = new System.Windows.Forms.TextBox();
             this.chkbox_sample_errors = new System.Windows.Forms.CheckBox();
+            this.chkbox_zipcode_dbcheck = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // btn_select_csv
@@ -109,11 +110,21 @@
             this.chkbox_sample_errors.Text = "Show Sample Errors";
             this.chkbox_sample_errors.UseVisualStyleBackColor = true;
             // 
+            // chkbox_zipcode_dbcheck
+            // 
+            this.chkbox_zipcode_dbcheck.Location = new System.Drawing.Point(17, 93);
+            this.chkbox_zipcode_dbcheck.Name = "chkbox_zipcode_dbcheck";
+            this.chkbox_zipcode_dbcheck.Size = new System.Drawing.Size(121, 33);
+            this.chkbox_zipcode_dbcheck.TabIndex = 6;
+            this.chkbox_zipcode_dbcheck.Text = "Check Zip Codes Against Database";
+            this.chkbox_zipcode_dbcheck.UseVisualStyleBackColor = true;
+            // 
             // frm_CSV_checker
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(816, 342);
+            this.Controls.Add(this.chkbox_zipcode_dbcheck);
             this.Controls.Add(this.chkbox_sample_errors);
             this.Controls.Add(this.txtbox_status);
             this.Controls.Add(this.txtbox_file_errors);
@@ -136,6 +147,7 @@
         private System.Windows.Forms.OpenFileDialog ofd_CVS_selector;
         private System.Windows.Forms.TextBox txtbox_status;
         private System.Windows.Forms.CheckBox chkbox_sample_errors;
+        private System.Windows.Forms.CheckBox chkbox_zipcode_dbcheck;
     }
 }
 

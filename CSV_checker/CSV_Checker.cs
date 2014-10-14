@@ -15,6 +15,7 @@ namespace CSV_checker
     {
 
         private string selected_file;
+        CSV_File input_file;
 
         public frm_CSV_checker()
         {
@@ -51,21 +52,25 @@ namespace CSV_checker
         {
             List<string> format_report = new List<string>();
             List<string> sample_errors = new List<string>();
+            List<string> invalid_zipcodes = new List<string>();
             bool[] added_sample_error_array = {false, false, false, false, false};
-            string[,] error_descriptions = { {"Format Error" , "does not have a valid format"}, 
+            string[,] error_descriptions = { {"Formating / General Data Error" , "does not have a valid format"}, 
                                              {"Special Character" , "has special characters"},
                                              {"Zipcode Error" , "is not a correctly formatted zipcode"},
                                              {"Record Too Long","is over 40 characters"},
                                              {"Mandatory Field Missing","This field cannot be blank"} };
             bool[] error_array = new bool[5]; //Stores the result from the multi error check
             string current_field;
-            CSV_File input_file;
             
             //if a file is selected, initialize the CSV_file object
             if (!String.IsNullOrWhiteSpace(selected_file))
+            {
                 input_file = new CSV_File(selected_file);
+            }
             else
+            {
                 input_file = new CSV_File();
+            }
 
             //check if initialized
             if( !input_file.is_initialized )
@@ -73,7 +78,10 @@ namespace CSV_checker
                 MessageBox.Show("No File Selected.");
                 return;
             }
-           
+
+            //setting whether to check zipcodes against the database
+            input_file.check_zipdb = chkbox_zipcode_dbcheck.Checked;
+
             ////////////////
             //////Starting to check for errors here
             //
@@ -119,8 +127,8 @@ namespace CSV_checker
                         }
                         else
                         {
-                            format_report.Add( "-> [" + index + "] : " + title + " - Incorrect. The title should be: " 
-                                                + input_file.correct_header_a[index] + Environment.NewLine);
+                            format_report.Add( "-> [" + index + "] : '" + title + "' - Incorrect. The title should be: '" 
+                                                + input_file.correct_header_a[index] + "'" + Environment.NewLine);
                         }
 
                         index++;
@@ -176,8 +184,9 @@ namespace CSV_checker
 
             //open the csv file to be checked
             StreamReader reader = new StreamReader(input_file.fpath);
-
+            
             //read a line and store in memory as a string and as an array
+            //reading the header , and do nothing
             input_file.current_line_s = reader.ReadLine();
             input_file.current_line_to_a();
 
@@ -198,6 +207,13 @@ namespace CSV_checker
                 //check each field in the current line array
                 for (int index = 0; index < input_file.current_line_a.Length; index++ )
                 {
+                    //Error types:
+                    //0: Format
+                    //1: Special Character
+                    //2: Zipcode
+                    //3: Length
+                    //4: Missing mandatory field
+
                     //storing the field currently being read in memory
                     current_field = input_file.current_line_a[index];
                     
@@ -207,6 +223,12 @@ namespace CSV_checker
                     //Add sample errors, once for each type of error
                     for (int error_type = 0; error_type < 4; error_type++)
                     {
+                        if (error_type == 2 && error_array[error_type])
+                        {
+                            invalid_zipcodes.Add(current_field);
+                        }
+
+                        //add sample errors for the errors sharing a report style
                         if(!added_sample_error_array[error_type] && error_array[error_type])
                         {
                             sample_errors.Add( String.Format("{0}, on line {1}, in the '{2}' column. '{3}'\0{4}.",
@@ -218,6 +240,8 @@ namespace CSV_checker
                             added_sample_error_array[error_type] = true;
                                                                           
                         }
+                        //add sample error for mandatory field missing
+                        //this error has a distinct report style, so it has to be separated
                         if(!added_sample_error_array[4] && error_array[4])
                         {
                             sample_errors.Add(String.Format("{0}, on line {1}, in the '{2}' column. {3}.",
@@ -296,16 +320,21 @@ namespace CSV_checker
                     txtbox_file_errors.Text += Environment.NewLine + Environment.NewLine;
                 }
             }
+
+            if (chkbox_zipcode_dbcheck.Checked)
+            {
+                txtbox_file_errors.Text += Environment.NewLine + "***** List of Invalid Zipcodes: *****" + Environment.NewLine + Environment.NewLine;
+                foreach (string item in invalid_zipcodes)
+                {
+                    txtbox_file_errors.Text += item;
+                    txtbox_file_errors.Text += Environment.NewLine;
+                }
+            }
         }
 
         private void txtbox_selected_file_TextChanged(object sender, EventArgs e)
         {
             txtbox_file_errors.Text = "(any errors will be displayed here)";
-
-        }
-
-        private void lbl_line_num_Click(object sender, EventArgs e)
-        {
 
         }
     }

@@ -38,6 +38,7 @@ namespace CSV_checker
 
         private bool _has_quotes;
         private bool _has_correct_header;
+        private bool _check_zipdb;
         private int _current_index = -1;
         private int _package_ID_index = -1;
         private int _name_index = -1;
@@ -64,18 +65,20 @@ namespace CSV_checker
                                                                      "State","Zip","Country",
                                                                      "Cost Center Id","Reference 1","Reference 2",
                                                                      "Reference 3","Reference 4"};
+        private List<string> zipCodeList = new List<string>();
 
         //Tests for single records w/commas surrouinded by quotes
-        private Regex _CSV_delimeter_rx = new Regex(@",(?=(?:[^""']|[""|'][^""']*""|""[^""]*(\\.[^""]*)*"")*$)", RegexOptions.Compiled); 
-        
+        private Regex _CSV_delimeter_rx = new Regex(@",(?=(?:[^""]|[""][^""]*""|""[^""]*(\\.[^""]*)*"")*$)", RegexOptions.Compiled);
+        //private Regex _CSV_delimeter_rx = new Regex(@",(?=(?:[^""']|[""|'][^""']*""|""[^""]*(\\.[^""]*)*"")*$)", RegexOptions.Compiled); 
+
         //data validation checks
-        private Regex _illegal_package_id_rx = new Regex(@"^[\.-]|[\?\$\)\(\*\^\+""\\<>,#@&%!='`]" ,RegexOptions.Compiled); //Characters not allowed in Package IDs
+        private Regex _illegal_package_id_rx = new Regex(@"^[\.-]|[\?\$\)\(\*\^\+""\\<>,#@&%!='`]", RegexOptions.Compiled); //Characters not allowed in Package IDs
         private Regex _illegal_name_chars_rx = new Regex(@"[^a-zA-Z\.\-' ]", RegexOptions.Compiled);                //Characters not allowed in names
-        private Regex _legal_state_code_rx = new Regex(@"^[A-Z]{2}$" ,RegexOptions.Compiled);                       //invalid state format
-        private Regex _legal_zipcode_chars_rx = new Regex(@"^\d{5}$" ,RegexOptions.Compiled);                       //invalid zip code format
-        private Regex _legal_long_zipcode_chars_rx = new Regex(@"^\d{5}\-\d{4}$" ,RegexOptions.Compiled);           //invalid zip+4 format
+        private Regex _legal_state_code_rx = new Regex(@"^[A-Z]{2}$", RegexOptions.Compiled);                       //invalid state format
+        private Regex _legal_zipcode_chars_rx = new Regex(@"^\d{5}$", RegexOptions.Compiled);                       //invalid zip code format
+        private Regex _legal_long_zipcode_chars_rx = new Regex(@"^\d{5}\-\d{4}$", RegexOptions.Compiled);           //invalid zip+4 format
         //private Regex _legal_country_code_rx = "US";
-        private Regex _illegal_chars_rx = new Regex(@"[^\p{IsBasicLatin}]" ,RegexOptions.Compiled);                 //Default Illegal Character Set (not basic latin)
+        private Regex _illegal_chars_rx = new Regex(@"[^\p{IsBasicLatin}]", RegexOptions.Compiled);                 //Default Illegal Character Set (not basic latin)
         
         /////
         ///Public constructors, getters/setters, methods and member functions start here
@@ -87,7 +90,7 @@ namespace CSV_checker
             //fpath = System.Environment.GetEnvironmentVariable("windir");
             is_initialized = false;
 
-            num_errors = 0;
+            //num_errors = 0;
         }
         
         //Constructor
@@ -95,7 +98,7 @@ namespace CSV_checker
         {
             fpath = a_fpath;
             //is_initialized = true;
-            initialize();
+            //initialize();
         }
 
         ////
@@ -159,6 +162,15 @@ namespace CSV_checker
         {
             set { _has_quotes = value; }
             get { return _has_quotes; }
+
+        }
+
+        //check_zipdb
+        //determines whether or not to check the zipcodes agains the predefined list of US zipcodes
+        public bool check_zipdb
+        {
+            set { _check_zipdb = value; }
+            get { return _check_zipdb; }
 
         }
 
@@ -318,18 +330,26 @@ namespace CSV_checker
         public void initialize()
         {
             is_initialized = true;
+            check_zipdb = false;
+            num_errors = 0;            
+            num_bad_format = 0;
+            num_bad_zipcodes = 0;
+            num_illegal_chars = 0;
+            num_over40_chars = 0;
+            num_missing_fields = 0;
             
             string[] fpath_a = fpath.Split(new char[]{'\\'});
             fname = fpath_a.Last();
 
-            get_header_ff();
+            StreamReader zipCodeReader = new StreamReader(@"zip_code_list.csv");
+            do
+            {
+                zipCodeList.Add(zipCodeReader.ReadLine());
+            } while (zipCodeReader.Peek() != -1);
+            zipCodeReader.Close();
             
-            num_errors = 0;
-            num_bad_format = 0;
-            num_bad_zipcodes = 0;
-            num_illegal_chars = 0;
-            _num_over40_chars = 0;
-            num_missing_fields = 0;
+
+            get_header_ff();
 
         }
         
@@ -341,6 +361,8 @@ namespace CSV_checker
             if(is_initialized)
             {
                 StreamReader reader = new StreamReader(fpath);
+                
+                //check if the data has quotes
                 if ((char)reader.Peek() == '\"')
                 {
                     has_quotes = true;
@@ -349,6 +371,7 @@ namespace CSV_checker
                 {
                     has_quotes = false;
                 }
+                
                 header_s = reader.ReadLine();
                 header_to_a();
                 wrong_header_check();
@@ -361,7 +384,7 @@ namespace CSV_checker
         //bool header_check()
         //returns true if the header matches the correct header, false if it dosent
         public void wrong_header_check()
-        {
+        {/*
             if (has_quotes)
             {
                 if (_header_s == _correct_header)
@@ -374,7 +397,7 @@ namespace CSV_checker
                     has_correct_header = false;
                 }
             }
-            else if (header_a.Length == correct_header_a.Length)
+            else */if (header_a.Length == correct_header_a.Length)
             {
                 int loop_length = header_a.Length;
                 for (int index = 0; index < loop_length; index++ )
@@ -382,15 +405,16 @@ namespace CSV_checker
                     if(header_a[index] != correct_header_a[index])
                     {
                         num_errors++;
-                        _has_correct_header = false;
+                        has_correct_header = false;
+                        return;
                     }
                 }
-                _has_correct_header = true;
+                has_correct_header = true;
             }
             else
             {
                 num_errors++;
-                _has_correct_header = false;
+                has_correct_header = false;
             }
         }
 
@@ -399,7 +423,7 @@ namespace CSV_checker
         //converts header string to an array
         public void header_to_a()
         {
-            header_a = CSV_delimeter_rx.Split(header_s.Trim('\"'));
+            header_a = CSV_delimeter_rx.Split(header_s);
 
 
             for (long index = 0; index < header_a.LongLength; index++)
@@ -668,16 +692,67 @@ namespace CSV_checker
         {
             // legal_zipcode_chars_rx.IsMatch(a_zipcode) checks for ##### form
             // legal_long_zipcode_chars_rx.IsMatch(a_zipcode) checks for #####-#### form
-            
+
+            a_zipcode = a_zipcode.PadLeft(5, '0');
+
             //if (!Regex.IsMatch(a_zipcode, _legal_zipcode_chars))
-            if (legal_zipcode_chars_rx.IsMatch(a_zipcode) || legal_long_zipcode_chars_rx.IsMatch(a_zipcode))
+            if (legal_zipcode_chars_rx.IsMatch(a_zipcode) )
             {
-                return false;
+                if (check_zipdb)
+                {
+                    if (zipCodeList.Contains(a_zipcode))
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        num_errors++;
+                        num_bad_zipcodes++;
+                        return true;
+                    }
+                }
+                else 
+                { 
+                    return false; 
+                }
             }
+            else if (legal_long_zipcode_chars_rx.IsMatch(a_zipcode))
+            {
+                if (check_zipdb)
+                {
+                    if (zipCodeList.Contains(a_zipcode.Split('-')[0]))
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        num_errors++;
+                        num_bad_zipcodes++;
+                        return true;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+                
+            }/*
+            else if(a_zipcode.Length > 2 && a_zipcode.Length < 5)
+            {
+
+                if (zipCodeList.Contains(a_zipcode.PadLeft(5,))
+                {
+                    return false;
+                }
+                else
+                {
+                    num_errors++;
+                    num_bad_zipcodes++;
+                    return true;
+                }
+            }*/
             else
             {
-                num_errors++;
-                num_bad_zipcodes++;
                 return true;
             }
         }
