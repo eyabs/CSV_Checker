@@ -32,7 +32,8 @@ namespace CSV_checker
         {         
             //show the open file dialog box
             if (ofd_CVS_selector.ShowDialog() == DialogResult.OK)
-            {//Assign the file to be checked
+            {
+                //Assign the file to be checked
                 txtbox_status.Clear();
                 selected_file = ofd_CVS_selector.FileName;
                 txtbox_selected_file.Text = selected_file;
@@ -324,10 +325,17 @@ namespace CSV_checker
             if (chkbox_zipcode_dbcheck.Checked)
             {
                 txtbox_file_errors.Text += Environment.NewLine + "***** List of Invalid Zipcodes: *****" + Environment.NewLine + Environment.NewLine;
+                txtbox_file_errors.Text += "(first ten invalid zipcodes will be shown)" + Environment.NewLine;
+                int loop = 0;
                 foreach (string item in invalid_zipcodes)
                 {
+                    loop++;
                     txtbox_file_errors.Text += item;
                     txtbox_file_errors.Text += Environment.NewLine;
+                    if (loop>=10)
+                    {
+                        break;
+                    }
                 }
             }
         }
