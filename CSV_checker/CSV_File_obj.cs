@@ -16,6 +16,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace CSV_checker
@@ -65,7 +66,7 @@ namespace CSV_checker
                                                                      "State","Zip","Country",
                                                                      "Cost Center Id","Reference 1","Reference 2",
                                                                      "Reference 3","Reference 4"};
-        private List<string> zipCodeList = new List<string>();
+        
 
         //Tests for single records w/commas surrouinded by quotes
         private Regex _CSV_delimeter_rx = new Regex(@",(?=(?:[^""]|[""][^""]*""|""[^""]*(\\.[^""]*)*"")*$)", RegexOptions.Compiled);
@@ -80,6 +81,8 @@ namespace CSV_checker
         //private Regex _legal_country_code_rx = "US";
         private Regex _illegal_chars_rx = new Regex(@"[^\p{IsBasicLatin}]", RegexOptions.Compiled);                 //Default Illegal Character Set (not basic latin)
         
+        Assembly _zipCodeAssembly;
+        private List<string> zipCodeList = new List<string>();
         /////
         ///Public constructors, getters/setters, methods and member functions start here
         //
@@ -341,7 +344,9 @@ namespace CSV_checker
             string[] fpath_a = fpath.Split(new char[]{'\\'});
             fname = fpath_a.Last();
 
-            StreamReader zipCodeReader = new StreamReader(@"zip_code_list.csv");
+            _zipCodeAssembly = Assembly.GetExecutingAssembly();
+
+            StreamReader zipCodeReader = new StreamReader(_zipCodeAssembly.GetManifestResourceStream("CSV_checker.zip_code_list.txt"));
             do
             {
                 zipCodeList.Add(zipCodeReader.ReadLine());
@@ -733,7 +738,9 @@ namespace CSV_checker
                 }
                 else
                 {
-                    return false;
+                    num_errors++;
+                    num_bad_zipcodes++;
+                    return true;
                 }
                 
             }/*

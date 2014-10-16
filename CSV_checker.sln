@@ -8,7 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{46ADBE78-7131-44FF-AA9D-44F3DBE4D315}"
 	ProjectSection(SolutionItems) = preProject
 		CSV_checker\bin\Debug\Sample CSV File.csv = CSV_checker\bin\Debug\Sample CSV File.csv
-		CSV_checker\bin\Debug\zip_code_list.csv = CSV_checker\bin\Debug\zip_code_list.csv
+		CSV_checker\bin\Debug\zip_code_list.txt = CSV_checker\bin\Debug\zip_code_list.txt
 	EndProjectSection
 EndProject
 Global

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frm_CSV_checker));
             this.btn_select_csv = new System.Windows.Forms.Button();
             this.btn_check_errors = new System.Windows.Forms.Button();
             this.txtbox_selected_file = new System.Windows.Forms.TextBox();
@@ -114,10 +115,11 @@
             // 
             this.chkbox_zipcode_dbcheck.Location = new System.Drawing.Point(17, 93);
             this.chkbox_zipcode_dbcheck.Name = "chkbox_zipcode_dbcheck";
-            this.chkbox_zipcode_dbcheck.Size = new System.Drawing.Size(121, 33);
+            this.chkbox_zipcode_dbcheck.Size = new System.Drawing.Size(121, 44);
             this.chkbox_zipcode_dbcheck.TabIndex = 6;
-            this.chkbox_zipcode_dbcheck.Text = "Check Zip Codes Against Database";
+            this.chkbox_zipcode_dbcheck.Text = "Check Zip Codes Against List of Valid Zip Codes";
             this.chkbox_zipcode_dbcheck.UseVisualStyleBackColor = true;
+            this.chkbox_zipcode_dbcheck.CheckedChanged += new System.EventHandler(this.chkbox_zipcode_dbcheck_CheckedChanged);
             // 
             // frm_CSV_checker
             // 
@@ -131,6 +133,7 @@
             this.Controls.Add(this.txtbox_selected_file);
             this.Controls.Add(this.btn_check_errors);
             this.Controls.Add(this.btn_select_csv);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "frm_CSV_checker";
             this.Text = "CSV Checker";
             this.ResumeLayout(false);

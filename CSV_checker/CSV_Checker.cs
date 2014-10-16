@@ -48,18 +48,18 @@ namespace CSV_checker
             //this.WriteLine("Hello, World!");
         }
 
-        //check the file for errors when the button is clicked
+        // Check the file for errors when the button is clicked.
         private void btn_check_errors_Click(object sender, EventArgs e)
         {
             List<string> format_report = new List<string>();
             List<string> sample_errors = new List<string>();
             List<string> invalid_zipcodes = new List<string>();
             bool[] added_sample_error_array = {false, false, false, false, false};
-            string[,] error_descriptions = { {"Formating / General Data Error" , "does not have a valid format"}, 
-                                             {"Special Character" , "has special characters"},
-                                             {"Zipcode Error" , "is not a correctly formatted zipcode"},
-                                             {"Record Too Long","is over 40 characters"},
-                                             {"Mandatory Field Missing","This field cannot be blank"} };
+            string[,] error_descriptions = { {"Formating / General Data Error" , " does not have a valid format"}, 
+                                             {"Special Character" , " has special characters"},
+                                             {"Zipcode Error" , " is not a correctly formatted zipcode"},
+                                             {"Record Too Long"," is over 40 characters"},
+                                             {"Mandatory Field Missing"," This field cannot be blank"} };
             bool[] error_array = new bool[5]; //Stores the result from the multi error check
             string current_field;
             
@@ -232,12 +232,12 @@ namespace CSV_checker
                         //add sample errors for the errors sharing a report style
                         if(!added_sample_error_array[error_type] && error_array[error_type])
                         {
-                            sample_errors.Add( String.Format("{0}, on line {1}, in the '{2}' column. '{3}'\0{4}.",
+                            sample_errors.Add( String.Format("{0}, on line {1}, in the '{2}' column. '{3}' {4}.",
                                                error_descriptions[error_type, 0],
                                                line_num.ToString(),
                                                input_file.header_a[index], 
                                                current_field,
-                                               error_descriptions[error_type, 1]) );
+                                               error_descriptions[error_type, 1] ) );
                             added_sample_error_array[error_type] = true;
                                                                           
                         }
@@ -340,10 +340,20 @@ namespace CSV_checker
             }
         }
 
+        // Display a notice once a file is selected.
         private void txtbox_selected_file_TextChanged(object sender, EventArgs e)
         {
             txtbox_file_errors.Text = "(any errors will be displayed here)";
 
+        }
+
+        // Do somerthing once the "Check Zip Codes Against List of Valid Zip Codes" box is checked.
+        private void chkbox_zipcode_dbcheck_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkbox_zipcode_dbcheck.Checked)
+            {
+                MessageBox.Show("Note: This option may cause slower performance.");
+            }
         }
     }
 

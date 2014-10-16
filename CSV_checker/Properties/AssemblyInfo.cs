@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("CSV_checker")]
+[assembly: AssemblyTitle("CSV Checker")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Hewlett-Packard Company")]
-[assembly: AssemblyProduct("CSV_checker")]
-[assembly: AssemblyCopyright("Copyright © Hewlett-Packard Company 2014")]
+[assembly: AssemblyCompany("OSM Worldwide")]
+[assembly: AssemblyProduct("CSV Checker")]
+[assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
