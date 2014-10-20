@@ -54,34 +54,39 @@
             this.btn_check_errors.Location = new System.Drawing.Point(27, 41);
             this.btn_check_errors.Name = "btn_check_errors";
             this.btn_check_errors.Size = new System.Drawing.Size(100, 23);
-            this.btn_check_errors.TabIndex = 1;
+            this.btn_check_errors.TabIndex = 4;
             this.btn_check_errors.Text = "Check For Errors";
             this.btn_check_errors.UseVisualStyleBackColor = true;
             this.btn_check_errors.Click += new System.EventHandler(this.btn_check_errors_Click);
             // 
             // txtbox_selected_file
             // 
+            this.txtbox_selected_file.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtbox_selected_file.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.txtbox_selected_file.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtbox_selected_file.Location = new System.Drawing.Point(144, 12);
+            this.txtbox_selected_file.Location = new System.Drawing.Point(144, 15);
             this.txtbox_selected_file.Name = "txtbox_selected_file";
             this.txtbox_selected_file.ReadOnly = true;
             this.txtbox_selected_file.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtbox_selected_file.Size = new System.Drawing.Size(660, 22);
-            this.txtbox_selected_file.TabIndex = 2;
+            this.txtbox_selected_file.TabIndex = 1;
             this.txtbox_selected_file.TextChanged += new System.EventHandler(this.txtbox_selected_file_TextChanged);
             // 
             // txtbox_file_errors
             // 
+            this.txtbox_file_errors.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtbox_file_errors.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.txtbox_file_errors.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtbox_file_errors.Location = new System.Drawing.Point(144, 43);
+            this.txtbox_file_errors.Location = new System.Drawing.Point(144, 44);
             this.txtbox_file_errors.Multiline = true;
             this.txtbox_file_errors.Name = "txtbox_file_errors";
             this.txtbox_file_errors.ReadOnly = true;
             this.txtbox_file_errors.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtbox_file_errors.Size = new System.Drawing.Size(660, 260);
-            this.txtbox_file_errors.TabIndex = 3;
+            this.txtbox_file_errors.TabIndex = 5;
             this.txtbox_file_errors.TextChanged += new System.EventHandler(this.txtbox_file_errors_TextChanged);
             // 
             // ofd_CVS_selector
@@ -92,12 +97,14 @@
             // txtbox_status
             // 
             this.txtbox_status.AcceptsTab = true;
+            this.txtbox_status.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtbox_status.BackColor = System.Drawing.SystemColors.Control;
             this.txtbox_status.Location = new System.Drawing.Point(12, 310);
             this.txtbox_status.Name = "txtbox_status";
             this.txtbox_status.ReadOnly = true;
             this.txtbox_status.Size = new System.Drawing.Size(792, 20);
-            this.txtbox_status.TabIndex = 4;
+            this.txtbox_status.TabIndex = 6;
             // 
             // chkbox_sample_errors
             // 
@@ -107,7 +114,7 @@
             this.chkbox_sample_errors.Location = new System.Drawing.Point(17, 70);
             this.chkbox_sample_errors.Name = "chkbox_sample_errors";
             this.chkbox_sample_errors.Size = new System.Drawing.Size(121, 17);
-            this.chkbox_sample_errors.TabIndex = 5;
+            this.chkbox_sample_errors.TabIndex = 2;
             this.chkbox_sample_errors.Text = "Show Sample Errors";
             this.chkbox_sample_errors.UseVisualStyleBackColor = true;
             // 
@@ -116,10 +123,10 @@
             this.chkbox_zipcode_dbcheck.Location = new System.Drawing.Point(17, 93);
             this.chkbox_zipcode_dbcheck.Name = "chkbox_zipcode_dbcheck";
             this.chkbox_zipcode_dbcheck.Size = new System.Drawing.Size(121, 44);
-            this.chkbox_zipcode_dbcheck.TabIndex = 6;
-            this.chkbox_zipcode_dbcheck.Text = "Check Zip Codes Against List of Valid Zip Codes";
+            this.chkbox_zipcode_dbcheck.TabIndex = 3;
+            this.chkbox_zipcode_dbcheck.Text = "Check Zip Codes Against List of Valid Zip Codes (slower)";
             this.chkbox_zipcode_dbcheck.UseVisualStyleBackColor = true;
-            this.chkbox_zipcode_dbcheck.CheckedChanged += new System.EventHandler(this.chkbox_zipcode_dbcheck_CheckedChanged);
+            //this.chkbox_zipcode_dbcheck.CheckedChanged += new System.EventHandler(this.chkbox_zipcode_dbcheck_CheckedChanged);
             // 
             // frm_CSV_checker
             // 

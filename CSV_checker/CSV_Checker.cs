@@ -347,14 +347,15 @@ namespace CSV_checker
 
         }
 
+        // Uncomment this and the event declaration to show the warning Message Box
         // Do somerthing once the "Check Zip Codes Against List of Valid Zip Codes" box is checked.
-        private void chkbox_zipcode_dbcheck_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkbox_zipcode_dbcheck.Checked)
-            {
-                MessageBox.Show("Note: This option may cause slower performance.");
-            }
-        }
+        //private void chkbox_zipcode_dbcheck_CheckedChanged(object sender, EventArgs e)
+        //{
+        //    if (chkbox_zipcode_dbcheck.Checked)
+        //    {
+        //        MessageBox.Show("Note: This option may cause slower performance.");
+        //    }
+        //}
     }
 
 }

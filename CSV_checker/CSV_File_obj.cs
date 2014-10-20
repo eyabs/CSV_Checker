@@ -698,9 +698,7 @@ namespace CSV_checker
             // legal_zipcode_chars_rx.IsMatch(a_zipcode) checks for ##### form
             // legal_long_zipcode_chars_rx.IsMatch(a_zipcode) checks for #####-#### form
 
-            a_zipcode = a_zipcode.PadLeft(5, '0');
-
-            //if (!Regex.IsMatch(a_zipcode, _legal_zipcode_chars))
+            // Checking ##### form zipcodes
             if (legal_zipcode_chars_rx.IsMatch(a_zipcode) )
             {
                 if (check_zipdb)
@@ -720,7 +718,27 @@ namespace CSV_checker
                 { 
                     return false; 
                 }
-            }
+            }/*
+            else if (legal_zipcode_chars_rx.IsMatch(a_zipcode.PadLeft(5, '0')))
+            {
+                if (check_zipdb)
+                {
+                    if (zipCodeList.Contains(a_zipcode.PadLeft(5, '0')))
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        num_errors++;
+                        num_bad_zipcodes++;
+                        return true;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }*/
             else if (legal_long_zipcode_chars_rx.IsMatch(a_zipcode))
             {
                 if (check_zipdb)
@@ -743,23 +761,11 @@ namespace CSV_checker
                     return true;
                 }
                 
-            }/*
-            else if(a_zipcode.Length > 2 && a_zipcode.Length < 5)
-            {
-
-                if (zipCodeList.Contains(a_zipcode.PadLeft(5,))
-                {
-                    return false;
-                }
-                else
-                {
-                    num_errors++;
-                    num_bad_zipcodes++;
-                    return true;
-                }
-            }*/
+            }
             else
             {
+                num_errors++;
+                num_bad_zipcodes++;
                 return true;
             }
         }
