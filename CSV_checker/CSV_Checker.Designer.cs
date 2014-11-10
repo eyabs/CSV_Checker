@@ -37,6 +37,7 @@
             this.txtbox_status = new System.Windows.Forms.TextBox();
             this.chkbox_sample_errors = new System.Windows.Forms.CheckBox();
             this.chkbox_zipcode_dbcheck = new System.Windows.Forms.CheckBox();
+            this.btnVerifyZips = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btn_select_csv
@@ -126,13 +127,24 @@
             this.chkbox_zipcode_dbcheck.TabIndex = 3;
             this.chkbox_zipcode_dbcheck.Text = "Check Zip Codes Against List of Valid Zip Codes (slower)";
             this.chkbox_zipcode_dbcheck.UseVisualStyleBackColor = true;
-            //this.chkbox_zipcode_dbcheck.CheckedChanged += new System.EventHandler(this.chkbox_zipcode_dbcheck_CheckedChanged);
+            this.chkbox_zipcode_dbcheck.Visible = false;
+            // 
+            // btnVerifyZips
+            // 
+            this.btnVerifyZips.Location = new System.Drawing.Point(27, 143);
+            this.btnVerifyZips.Name = "btnVerifyZips";
+            this.btnVerifyZips.Size = new System.Drawing.Size(100, 23);
+            this.btnVerifyZips.TabIndex = 7;
+            this.btnVerifyZips.Text = "Verify Zipcodes";
+            this.btnVerifyZips.UseVisualStyleBackColor = true;
+            this.btnVerifyZips.Click += new System.EventHandler(this.btnVerifyZips_Click);
             // 
             // frm_CSV_checker
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(816, 342);
+            this.Controls.Add(this.btnVerifyZips);
             this.Controls.Add(this.chkbox_zipcode_dbcheck);
             this.Controls.Add(this.chkbox_sample_errors);
             this.Controls.Add(this.txtbox_status);
@@ -158,6 +170,7 @@
         private System.Windows.Forms.TextBox txtbox_status;
         private System.Windows.Forms.CheckBox chkbox_sample_errors;
         private System.Windows.Forms.CheckBox chkbox_zipcode_dbcheck;
+        private System.Windows.Forms.Button btnVerifyZips;
     }
 }
 

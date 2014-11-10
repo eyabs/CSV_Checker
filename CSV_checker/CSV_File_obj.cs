@@ -25,7 +25,7 @@ namespace CSV_checker
     ////
     //Class CSV_File
     //handles choosing the CVS file, checking for errors, printing a report, etc.
-    class CSV_File
+    public class CSV_File
     {
         ///Private internal variables
         private string _fpath; //container for the path to a file
@@ -80,9 +80,12 @@ namespace CSV_checker
         private Regex _legal_long_zipcode_chars_rx = new Regex(@"^\d{5}\-\d{4}$", RegexOptions.Compiled);           //invalid zip+4 format
         //private Regex _legal_country_code_rx = "US";
         private Regex _illegal_chars_rx = new Regex(@"[^\p{IsBasicLatin}]", RegexOptions.Compiled);                 //Default Illegal Character Set (not basic latin)
-        
-        Assembly _zipCodeAssembly;
-        private List<string> zipCodeList = new List<string>();
+
+        private ZipCodeDB ZipCodeInfo;
+
+        //Assembly _zipCodeAssembly;
+        //private List<string[]> zipCodeDB = new List<string[]>();
+        //private List<string> zipCodeList = new List<string>();
         /////
         ///Public constructors, getters/setters, methods and member functions start here
         //
@@ -183,6 +186,12 @@ namespace CSV_checker
         {
             set { _current_line_s = value; }
             get { return _current_line_s; }
+        }
+
+        public void getLine(string aLine)
+        {
+            _current_line_s = aLine;
+            current_line_to_a();
         }
 
         //string[] current_line_a
@@ -342,46 +351,110 @@ namespace CSV_checker
             num_missing_fields = 0;
             
             string[] fpath_a = fpath.Split(new char[]{'\\'});
-            fname = fpath_a.Last();
-
-            _zipCodeAssembly = Assembly.GetExecutingAssembly();
-
-            StreamReader zipCodeReader = new StreamReader(_zipCodeAssembly.GetManifestResourceStream("CSV_checker.zip_code_list.txt"));
-            do
-            {
-                zipCodeList.Add(zipCodeReader.ReadLine());
-            } while (zipCodeReader.Peek() != -1);
-            zipCodeReader.Close();
-            
+            fname = fpath_a.Last();         
 
             get_header_ff();
 
+            ZipCodeInfo = new ZipCodeDB();
         }
+            
         
-        
+        // public bool[] VerifyZipcode( string[] aLine )
+        // returns a T/F array like:
+        // { can parse file, zip exists, zip matches state }
+        public string[] VerifyZipcode( string[] aLine )
+        {
+            string [] verifications = new string[] {"0","0","0"};
+            string zipCode;
+            string state;
+            string city;
+            // Return False Verifcation array if not initialized.
+            if (!is_initialized)
+            {
+                return verifications;
+            }
+            try
+            {
+                zipCode = aLine[zipcode_index];
+                state = aLine[state_index];
+                city = aLine[city_index];
+            }
+            // Return False Verifcation array if parsing the CSV failed.
+            catch
+            {
+                return verifications;
+            }
+            verifications[0] = "OK";
+            
+            int index = ZipCodeInfo.IndexOfZip(zipCode);
+
+            if (index != -1)
+            {
+                verifications[1] = "OK";
+            }
+            else
+            {
+                verifications[1] = zipCode;
+                return verifications;
+            }
+            
+            string stateFromDB = ZipCodeInfo.state(index);
+            if (String.Equals(state.Substring(0,2).ToUpper(), stateFromDB))
+            {
+                verifications[2] = "OK";
+            }
+            else
+            {
+                verifications[2] = stateFromDB;
+            }
+
+            return verifications;
+
+        }
+
+        public string MakeZip5Digits(string aZip)
+        {
+            //int intZip;
+            //if(int.TryParse(aZip, out intZip))
+
+            int len = aZip.Length;
+            if (len == 5)
+            {
+                return aZip;
+            }
+            else if (len < 5)
+            {
+                return aZip.PadLeft(5, '0');
+            }
+            else
+            {
+                return aZip.Substring(0, 5);
+            }
+        }
+                
         //void get_header_ff()
         //gets the header in string form from the input file
         public void get_header_ff()
         {
-            if(is_initialized)
+            if(is_initialized && File.Exists(fpath))
             {
-                StreamReader reader = new StreamReader(fpath);
-                
-                //check if the data has quotes
-                if ((char)reader.Peek() == '\"')
+                using (StreamReader reader = new StreamReader(fpath))
                 {
-                    has_quotes = true;
+                    //check if the data has quotes
+                    if ((char)reader.Peek() == '\"')
+                    {
+                        has_quotes = true;
+                    }
+                    else
+                    {
+                        has_quotes = false;
+                    }
+
+                    header_s = reader.ReadLine();
+                    header_to_a();
+                    wrong_header_check();
+                    find_special_indices();
                 }
-                else
-                {
-                    has_quotes = false;
-                }
-                
-                header_s = reader.ReadLine();
-                header_to_a();
-                wrong_header_check();
-                find_special_indices();
-                reader.Close();
             }
             else { header_s = "No File Selected."; }
         }
@@ -407,7 +480,7 @@ namespace CSV_checker
                 int loop_length = header_a.Length;
                 for (int index = 0; index < loop_length; index++ )
                 {
-                    if(header_a[index] != correct_header_a[index])
+                    if(!String.Equals(header_a[index],correct_header_a[index],StringComparison.InvariantCultureIgnoreCase))
                     {
                         num_errors++;
                         has_correct_header = false;
@@ -698,12 +771,13 @@ namespace CSV_checker
             // legal_zipcode_chars_rx.IsMatch(a_zipcode) checks for ##### form
             // legal_long_zipcode_chars_rx.IsMatch(a_zipcode) checks for #####-#### form
 
+
             // Checking ##### form zipcodes
             if (legal_zipcode_chars_rx.IsMatch(a_zipcode) )
             {
                 if (check_zipdb)
                 {
-                    if (zipCodeList.Contains(a_zipcode))
+                    if (ZipCodeInfo.ZipExists(a_zipcode))
                     {
                         return false;
                     }
@@ -718,12 +792,13 @@ namespace CSV_checker
                 { 
                     return false; 
                 }
-            }/*
-            else if (legal_zipcode_chars_rx.IsMatch(a_zipcode.PadLeft(5, '0')))
+            }
+            else if (legal_long_zipcode_chars_rx.IsMatch(a_zipcode))
             {
                 if (check_zipdb)
                 {
-                    if (zipCodeList.Contains(a_zipcode.PadLeft(5, '0')))
+                    //if (zipCodeList.Contains(a_zipcode.Split('-')[0]))
+                    if (ZipCodeInfo.ZipExists(a_zipcode))
                     {
                         return false;
                     }
@@ -737,28 +812,6 @@ namespace CSV_checker
                 else
                 {
                     return false;
-                }
-            }*/
-            else if (legal_long_zipcode_chars_rx.IsMatch(a_zipcode))
-            {
-                if (check_zipdb)
-                {
-                    if (zipCodeList.Contains(a_zipcode.Split('-')[0]))
-                    {
-                        return false;
-                    }
-                    else
-                    {
-                        num_errors++;
-                        num_bad_zipcodes++;
-                        return true;
-                    }
-                }
-                else
-                {
-                    num_errors++;
-                    num_bad_zipcodes++;
-                    return true;
                 }
                 
             }
@@ -816,4 +869,109 @@ namespace CSV_checker
             return result;
         }
     }
+
+    public class ZipCodeDB
+    {
+        private List<string> _zipCodes = new List<string>();
+        private List<string> _states = new List<string>();
+        private List<string> _cities = new List<string>();
+
+        public ZipCodeDB()
+        {
+            CreateZipLists();
+        }
+
+        // private void CreateZipLists()
+        // Reads and stores the .csv data file containing zipcode info.
+        private void CreateZipLists()
+        {
+            string line;
+            string[] splitLine;
+
+            Assembly _zipCodeAssembly = Assembly.GetExecutingAssembly();
+            using (StreamReader zipCodeReader = new StreamReader(
+                        _zipCodeAssembly.GetManifestResourceStream("CSV_checker.zipcode_db_full.csv")))
+            {
+                zipCodeReader.ReadLine();
+                do
+                {
+                    line = zipCodeReader.ReadLine();
+                    splitLine = line.Split(',');
+                    _zipCodes.Add(splitLine[0]);
+                    _cities.Add(splitLine[1]);
+                    _states.Add(splitLine[2]);
+                } while (zipCodeReader.Peek() != -1);
+            }
+
+        }
+
+        private string MakeZip5Digits(string aZip)
+        {
+            //int intZip;
+            //if(int.TryParse(aZip, out intZip))
+
+            int len = aZip.Length;
+            if (len == 5)
+            {
+                return aZip;
+            }
+            else if (len < 5)
+            {
+                return aZip.PadLeft(5, '0');
+            }
+            else
+            {
+                return aZip.Substring(0, 5);
+            }
+        } 
+        
+        public bool ZipExists(string aZip)
+        {
+            return _zipCodes.Contains(MakeZip5Digits(aZip));
+        }
+
+        public int IndexOfZip(string aZip)
+        {
+            return _zipCodes.IndexOf(MakeZip5Digits(aZip));
+        }
+
+        public string zipCode(int aIndex)
+        {
+            try
+            {
+                return _zipCodes[aIndex];
+            }
+            catch
+            {
+                return "error";
+            }
+        }
+
+        public string city(int aIndex)
+        {
+            try
+            {
+                return _cities[aIndex];
+            }
+            catch
+            {
+                return "error";
+            }
+        }
+
+        public string state(int aIndex)
+        {
+            try
+            {
+                return _states[aIndex];
+            }
+            catch
+            {
+                return "error";
+            }
+        }
+    }
+
 }
+
+
