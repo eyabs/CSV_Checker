@@ -63,7 +63,7 @@ namespace CSV_checker
                                              {"Mandatory Field Missing"," This field cannot be blank"} };
             bool[] error_array = new bool[5]; //Stores the result from the multi error check
             string current_field;
-
+            bool showSampleErrors = chkbox_sample_errors.Checked;
 
             List<string[]> badFomatRecords = new List<string[]>();
             List<string[]> specialCharacterRecords = new List<string[]>();
@@ -95,8 +95,6 @@ namespace CSV_checker
                 return;
             }
 
-            //setting whether to check zipcodes against the database
-            input_file.check_zipdb = chkbox_zipcode_dbcheck.Checked;
 
             ////////////////
             //////Starting to check for errors here
@@ -211,14 +209,13 @@ namespace CSV_checker
             ulong line_num = 0;
 
             //open the csv file to be checked
-            using (StreamReader reader = new StreamReader(input_file.fpath))
+            using (StreamReader reader = new StreamReader(input_file.fpath, Encoding.Default))
             {
                 //read a line and store in memory as a string and as an array
                 //reading the header , and do nothing
                 input_file.current_line_s = reader.ReadLine();
                 input_file.current_line_to_a();
-
-
+                
                 //read/check each line
                 do
                 {
@@ -232,57 +229,56 @@ namespace CSV_checker
                     //display status in the status bar
                     txtbox_status.Text = "Checking Line: " + line_num.ToString() + "\t" + "Errors Found So Far: " + input_file.num_errors.ToString();
                     txtbox_status.Refresh();
-
+                    
                     //check each field in the current line array
                     for (int index = 0; index < input_file.current_line_a.Length; index++)
                     {
-                        //Error types:
-                        //0: Format
-                        //1: Special Character
-                        //2: Zipcode
-                        //3: Length
-                        //4: Missing mandatory field
-
                         //storing the field currently being read in memory
                         current_field = input_file.current_line_a[index];
-
-
+                        
+                        ///////////////////////////////////////////////
                         // THIS LINE CHECKS FOR ERRORS.
                         // copy the result from the error check
                         Array.Copy(input_file.multi_error_check(index, current_field), error_array, 5);
-
+                        ///////////////////////////////////////////////
                         //Add sample errors, once for each type of error
-                        for (int error_type = 0; error_type < 4; error_type++)
+                        for (int error_type = 0; error_type < 5; error_type++)
                         {
-                            if (error_type == 2 && error_array[error_type])
+                            //Error types:
+                            //0: Format
+                            //1: Special Character
+                            //2: Zipcode
+                            //3: Length
+                            //4: Missing mandatory field
+
+                            // Option to add bad records to report.
+                            if (showSampleErrors && error_array[error_type])
                             {
-                                invalid_zipcodes.Add(current_field);
-                            }
-
-                            //add sample errors for the errors sharing a report style
-                            if (!added_sample_error_array[error_type] && error_array[error_type])
-                            {
-                                sample_errors.Add(String.Format("{0}, on line {1}, in the '{2}' column. '{3}' {4}.",
-                                                   error_descriptions[error_type, 0],
-                                                   line_num.ToString(),
-                                                   input_file.header_a[index],
-                                                   current_field,
-                                                   error_descriptions[error_type, 1]));
-
-                                added_sample_error_array[error_type] = true;
-
-                            }
-                            //add sample error for mandatory field missing
-                            //this error has a distinct report style, so it has to be separated
-                            if (!added_sample_error_array[4] && error_array[4])
-                            {
-                                sample_errors.Add(String.Format("{0}, on line {1}, in the '{2}' column. {3}.",
-                                                      error_descriptions[4, 0],
-                                                      line_num.ToString(),
-                                                      input_file.header_a[index],
-                                                      error_descriptions[4, 1]));
-                                added_sample_error_array[4] = true;
-
+                                switch(error_type)
+                                {
+                                    case 0:
+                                        if (input_file.num_bad_format == 1) badFomatRecords.Add(input_file.header_a);
+                                        badFomatRecords.Add(input_file.current_line_a);
+                                        break;
+                                    case 1:
+                                        if (input_file.num_illegal_chars == 1) specialCharacterRecords.Add(input_file.header_a);
+                                        specialCharacterRecords.Add(input_file.current_line_a);
+                                        break;
+                                    case 2:
+                                        if (input_file.num_bad_zipcodes == 1) badZipFormatRecords.Add(input_file.header_a);
+                                        badZipFormatRecords.Add(input_file.current_line_a);
+                                        break;
+                                    case 3:
+                                        if (input_file.num_over40_chars == 1) tooLongRecords.Add(input_file.header_a);
+                                        tooLongRecords.Add(input_file.current_line_a);
+                                        break;
+                                    case 4:
+                                        if (input_file.num_missing_fields == 1) missingFieldRecords.Add(input_file.header_a);
+                                        missingFieldRecords.Add(input_file.current_line_a);
+                                        break;
+                                    default:
+                                        break;
+                                }
                             }
                         }
 
@@ -344,13 +340,53 @@ namespace CSV_checker
                                      + input_file.num_over40_chars + " field(s) are over 40 char(s)." + Environment.NewLine
                                      + input_file.num_missing_fields + " mandatory field(s) missing." + Environment.NewLine;
 
-            if (chkbox_sample_errors.Checked)
+            if (showSampleErrors)
             {
                 txtbox_file_errors.Text += Environment.NewLine + "***** Sample Errors: *****" + Environment.NewLine + Environment.NewLine;
-                foreach (string item in sample_errors)
+                if (input_file.num_errors == 0 || (input_file.num_errors == 1 && !input_file.has_correct_header))
                 {
-                    txtbox_file_errors.Text += item;
+                    txtbox_file_errors.Text += "(No Errors to Show)";
                     txtbox_file_errors.Text += Environment.NewLine + Environment.NewLine;
+
+                }
+                else
+                {
+                    // Old method of printing report.
+                    /* 
+                    foreach (string item in sample_errors)
+                    {
+                        txtbox_file_errors.Text += item;
+                        txtbox_file_errors.Text += Environment.NewLine + Environment.NewLine;
+                    }
+                    */
+
+                    // Print sample Errors.
+                    if(input_file.num_bad_format > 0)
+                    {
+                        txtbox_file_errors.Text += "***Records with Formatting Errors:***" + Environment.NewLine;
+                        printList(badFomatRecords, 11 ,true);
+                    }
+                    if (input_file.num_illegal_chars > 0)
+                    {
+                        txtbox_file_errors.Text += "***Records with Illegal/Special Characters:***" + Environment.NewLine;
+                        printList(specialCharacterRecords, 11, true);
+                    }
+                    if (input_file.num_bad_zipcodes > 0)
+                    {
+                        txtbox_file_errors.Text += "***Records with Bad Zip Code Formats:***" + Environment.NewLine;
+                        printList(badZipFormatRecords, 11, true);
+                    }
+                    
+                    if(input_file.num_over40_chars > 0)
+                    {
+                        txtbox_file_errors.Text += "***Records with Fields Over 40 Characters:***" + Environment.NewLine;
+                        printList(tooLongRecords, 11, true);
+                    }                    
+                    if(input_file.num_missing_fields > 0)
+                    {
+                        txtbox_file_errors.Text += "***Records with Mandatory Fields Missing:***" + Environment.NewLine;
+                        printList(missingFieldRecords, 11, true);
+                    }
                 }
             }
 
@@ -398,11 +434,13 @@ namespace CSV_checker
             doNotClearTextbox = !doNotClearTextbox;
 
             string line;
+            bool hasLineReadErrors = false;
             int lineNum = 1;
             int numInvalidZips = 0;
             int numStateMismatches = 0;
             List<string[]> invalidZips = new List<string[]>();
             List<string[]> stateMismatches = new List<string[]>();
+            List<string[]> lineReadErrors = new List<string[]>();
             string[] zipCheckArr;
             using(StreamReader reader = new StreamReader(selected_file))
             {
@@ -418,12 +456,32 @@ namespace CSV_checker
 
                     zipCheckArr = input_file.VerifyZipcode(input_file.current_line_a);
 
+                    // Check if CSV parsing worked.
+                    if (String.IsNullOrEmpty(zipCheckArr[1]))
+                    {
+                        if (!hasLineReadErrors) lineReadErrors.Add(new string[] { "Line Number:", "Record:" });
+                        hasLineReadErrors = true;
+                        string[] unreadableLine = new string[input_file.current_line_a.Length + 1];
+                        unreadableLine[0] = lineNum.ToString();
+                        input_file.current_line_a.CopyTo(unreadableLine, 1);
+                        lineReadErrors.Add(unreadableLine);
+                        break;
+                    }
+
                     // Check if zip code is valid.
                     if (!zipCheckArr[1].Equals("OK"))
                     {
                         // Get the zipcode, check if its blank, add it to the list of invalid zip codes.
-                        string zipCode = input_file.current_line_a[input_file.zipcode_index];
-                        zipCode = (String.IsNullOrWhiteSpace(zipCode)) ? "(blank)" : zipCode;
+                        string zipCode;
+                        try
+                        {
+                            zipCode = input_file.current_line_a[input_file.zipcode_index];
+                            zipCode = (String.IsNullOrWhiteSpace(zipCode)) ? "(blank)" : zipCode;
+                        }
+                        catch
+                        {
+                            zipCode = "Error Reading Zipcode";
+                        }
                         invalidZips.Add(new String[2]{lineNum.ToString(), zipCode});
                         numInvalidZips++;
                     }
@@ -448,26 +506,33 @@ namespace CSV_checker
 
 
             // Print the report.
-            if (numInvalidZips == 0)
+            if (numInvalidZips == 0 && !hasLineReadErrors)
             {
                 txtbox_file_errors.Text += "No Invalid Zipcodes." + Environment.NewLine + Environment.NewLine;
             }
             else
             {
                 txtbox_file_errors.Text += "****** Invalid Zipcodes ******" + Environment.NewLine + Environment.NewLine;
-                txtbox_file_errors.Text += "Line Number:\tInvalid Zip Code:"+ Environment.NewLine;
+                txtbox_file_errors.Text += "Line Number:".PadRight(15) + "Invalid Zip Code:".PadRight(15) 
+                                         + Environment.NewLine;
                 printList(invalidZips);
             }
 
             if (numStateMismatches != 0)
             {
                 txtbox_file_errors.Text += "****** State Mismatches ******" + Environment.NewLine + Environment.NewLine;
-                txtbox_file_errors.Text += "Line Number:\t"
-                                            + "Zip Code:\t\t"
-                                            + "State From File:\t" 
-                                            + "State Expected:"
+                txtbox_file_errors.Text += "Line Number:".PadRight(15)
+                                            + "Zip Code:".PadRight(15)
+                                            + "State Listed:".PadRight(15)
+                                            + "State Expected:".PadRight(15)
                                             + Environment.NewLine;
                 printList(stateMismatches);
+            }
+            if (hasLineReadErrors)
+            {
+
+                txtbox_file_errors.Text += "Some records could not be Interpreted."+ Environment.NewLine;
+                printList(lineReadErrors);
             }
             txtbox_status.Text = String.Format("{0} invalid zip code(s) found.\t {1} Zip code / state mismatches found.",
                                                     numInvalidZips,
@@ -475,38 +540,134 @@ namespace CSV_checker
             txtbox_status.Refresh();
             return numInvalidZips + numStateMismatches;
         }
-        
-        // Prints the first 25 items in a list of string arrays w/ tab sepatated values
+
+        // printList() + overloads
+        // Prints the specified numbner of items in a list in the error textbox w/ fixed width Default width = 15.
         private void printList(List<string[]> aList)
         {
-            printList(aList, 25);
+            printList(aList, 25, 15);
 
         }
-
-        // Overload
-        // Prints the specified numbner of items in a list in the error textbox w/ tab separated values.
-        private void printList(List<string[]> aList, int aMax)
+        private void printList(List<string[]> aList, int aMaxRecords, bool aFindWidth)
+        {
+            int[] widths;
+            widths = allMaxLengths(aList,aMaxRecords);
+            printList(aList, aMaxRecords, widths);
+        }
+        private void printList(List<string[]> aList, int aMaxRecords, int aWidth)
         {
             int loop = 0;
+            int recordCount = aList.Count;
             foreach (string[] array in aList)
             {
                 loop++;
                 foreach (string item in array)
                 {
-                    if (loop <= aMax) txtbox_file_errors.Text += item + "\t\t";                    
+                    txtbox_file_errors.Text += item.PadRight(aWidth);                    
                 }
-            txtbox_file_errors.Text += Environment.NewLine;
+                txtbox_file_errors.Text += Environment.NewLine;
+                if (loop >= aMaxRecords) break;
             }
-            if (loop > aMax)
+            if (recordCount > aMaxRecords)
             {
-                txtbox_file_errors.Text += "(" + (loop - 25).ToString() + " more)" + Environment.NewLine;
+                txtbox_file_errors.Text += "(" + (recordCount - aMaxRecords).ToString() + " more)" + Environment.NewLine;
             }
             txtbox_file_errors.Text += Environment.NewLine;
+            txtbox_file_errors.Refresh();
+        }
+        private void printList(List<string[]> aList, int aMaxRecords, int[] aWidths)
+        {
+            int colNum;
+            int recordCount = aList.Count;
+
+            int loop = 0;
+            foreach (string[] array in aList)
+            {
+                loop++;
+                colNum = 0;
+                foreach (string item in array)
+                {
+                    try
+                    {
+                        txtbox_file_errors.Text += item.PadRight(aWidths[colNum] + 3);
+                    }
+                    catch
+                    {
+                        txtbox_file_errors.Text += item.PadRight(40);
+                    }
+                    colNum++;
+                }
+                txtbox_file_errors.Text += Environment.NewLine;
+                if (loop >= aMaxRecords) break;
+            }
+            if (recordCount > aMaxRecords)
+            {
+                txtbox_file_errors.Text += "(" + (recordCount - aMaxRecords).ToString() + " more)" + Environment.NewLine;
+            }
+            txtbox_file_errors.Text += Environment.NewLine;
+            txtbox_file_errors.Refresh();
+        }
+
+        // maxLength( ... )
+        // Find the largest width of an entry in a List<string[]> withing the first specified number of records.
+        private int maxLength(List<string[]> aList, int aCutoff)
+        {
+            int max = 0;    
+            string[] arr;
+
+            // Set cutoff to the length of list if the list is smaller than the cutoff.
+            aCutoff = (aCutoff < aList.Count) ? aCutoff : aList.Count;
+            for (int loop = 0; loop < aCutoff; ++loop)
+            {
+                arr = aList[loop];
+                foreach (string item in arr)
+                {
+                    max = (item.Length > max) ? item.Length : max;
+                }
+            }
+            return max;
+        }
+
+        // allMaxLengths( ... )
+        // Return the largest widths in each col of a list of string arrays as in int array
+        private int[] allMaxLengths(List<string[]> aList, int aCutoff)
+        {
+            // Declare max size array as same size as the number of cols, initialize to 1.
+            int[] maxima = new int[aList[0].Length];
+            for (int loop = 0; loop < maxima.Length; ++loop) maxima[loop] = 1;
+            
+            string[] arr;
+
+            // Set cutoff to the length of list if the list is smaller than the cutoff.
+            aCutoff = (aCutoff < aList.Count) ? aCutoff : aList.Count;
+            for (int line = 0; line < aCutoff; ++line)
+            {
+                arr = aList[line];
+                for (int colLoop = 0; colLoop < maxima.Length; ++colLoop)
+                {
+                    try
+                    {
+                        maxima[colLoop] = (maxima[colLoop] < arr[colLoop].Length) ? arr[colLoop].Length : maxima[colLoop];
+                    }
+                    catch
+                    {
+                        maxima[colLoop] = 40;
+                    }
+                }
+                /*
+                foreach (string item in arr)
+                {
+                    maxima = (item.Length > max) ? item.Length : max;
+                }*/
+            }
+            return maxima;
+
         }
 
         // Prints a string array in the error textbox w/ tab separated values.
         private void printArray(string[] aArray)
         {
+            
             foreach (string detail in aArray )
             {
                 txtbox_file_errors.Text += detail + "\t\t";
@@ -514,6 +675,13 @@ namespace CSV_checker
             txtbox_file_errors.Text += Environment.NewLine;
 
         }
+
+        //private string spaces(int numSpaces)
+        //{
+        //    string spaceStr = "";
+        //    spaceStr.PadRight(numSpaces);
+        //    return spaceStr;
+        //}
 
         // Checks if file selected and exists.
         private bool verifyFileSelected(CSV_File aInput_file)
@@ -550,6 +718,11 @@ namespace CSV_checker
             else  message = String.Format("{0} zip code issues found.", numErrors);
 
             MessageBox.Show(message);
+        }
+
+        private void btnClearWindow_Click(object sender, EventArgs e)
+        {
+            txtbox_file_errors.Text = "";
         }
 
         // Uncomment this and the event declaration to show the warning Message Box

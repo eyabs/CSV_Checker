@@ -60,7 +60,7 @@ namespace CSV_checker
         private readonly char[] CSV_trim_char = new char[] { '\"' };
 
 
-        private readonly string _correct_header = "\"Package Id\",\"Company\",\"Full Name\",\"Address 1\",\"Address 2\",\"City\",\"State\",\"Zip\",\"Country\",\"Cost Center Id\",\"Reference 1\",\"Reference 2\",\"Reference 3\",\"Reference 4\"";
+        //private readonly string _correct_header = "\"Package Id\",\"Company\",\"Full Name\",\"Address 1\",\"Address 2\",\"City\",\"State\",\"Zip\",\"Country\",\"Cost Center Id\",\"Reference 1\",\"Reference 2\",\"Reference 3\",\"Reference 4\"";
         private readonly string[] _correct_header_a = new string[] { "Package Id","Company","Full Name",
                                                                      "Address 1","Address 2","City",
                                                                      "State","Zip","Country",
@@ -74,10 +74,10 @@ namespace CSV_checker
 
         //data validation checks
         private Regex _illegal_package_id_rx = new Regex(@"^[\.-]|[\?\$\)\(\*\^\+""\\<>,#@&%!='`]", RegexOptions.Compiled); //Characters not allowed in Package IDs
-        private Regex _illegal_name_chars_rx = new Regex(@"[^a-zA-Z\.\-' ]", RegexOptions.Compiled);                //Characters not allowed in names
+        //private Regex _illegal_name_chars_rx = new Regex(@"[^a-zA-Z\.\-' ]", RegexOptions.Compiled);                //Characters not allowed in names
         private Regex _legal_state_code_rx = new Regex(@"^[A-Z]{2}$", RegexOptions.Compiled);                       //invalid state format
         private Regex _legal_zipcode_chars_rx = new Regex(@"^\d{5}$", RegexOptions.Compiled);                       //invalid zip code format
-        private Regex _legal_long_zipcode_chars_rx = new Regex(@"^\d{5}\-\d{4}$", RegexOptions.Compiled);           //invalid zip+4 format
+        private Regex _legal_long_zipcode_chars_rx = new Regex(@"^(\d{5}\-\d{4})|(\d{9})$", RegexOptions.Compiled);           //invalid zip+4 format
         //private Regex _legal_country_code_rx = "US";
         private Regex _illegal_chars_rx = new Regex(@"[^\p{IsBasicLatin}]", RegexOptions.Compiled);                 //Default Illegal Character Set (not basic latin)
 
@@ -86,6 +86,8 @@ namespace CSV_checker
         //Assembly _zipCodeAssembly;
         //private List<string[]> zipCodeDB = new List<string[]>();
         //private List<string> zipCodeList = new List<string>();
+
+
         /////
         ///Public constructors, getters/setters, methods and member functions start here
         //
@@ -217,10 +219,10 @@ namespace CSV_checker
             get { return _legal_zipcode_chars_rx; }
         }
 
-        public Regex illegal_name_chars_rx
-        {
-            get { return _illegal_name_chars_rx; }
-        }
+        //public Regex illegal_name_chars_rx
+        //{
+        //    get { return _illegal_name_chars_rx; }
+        //}
 
         public Regex legal_long_zipcode_chars_rx
         {
@@ -368,7 +370,7 @@ namespace CSV_checker
             string zipCode;
             string state;
             string city;
-            // Return False Verifcation array if not initialized.
+            // Return False Verifcation array if checker is not initialized.
             if (!is_initialized)
             {
                 return verifications;
@@ -379,10 +381,10 @@ namespace CSV_checker
                 state = aLine[state_index];
                 city = aLine[city_index];
             }
-            // Return False Verifcation array if parsing the CSV failed.
+            // Return Null Verifcation array if parsing the CSV failed.
             catch
             {
-                return verifications;
+                return new string[] {"","",""};
             }
             verifications[0] = "OK";
             
@@ -611,7 +613,7 @@ namespace CSV_checker
                             city_index = Array.IndexOf(header_a, field);
                         }
                     }
-                    else if (field.Trim().ToLower().Contains("stat"))
+                    else if (field.Trim().ToLower().Contains("st"))
                     {
                         if (state_index == -1)
                         {
@@ -735,10 +737,11 @@ namespace CSV_checker
                 {
                     has_error = illegal_package_id_rx.IsMatch(a_field);
                 }
-                else if (a_index == name_index)
-                {
-                    has_error = illegal_name_chars_rx.IsMatch(a_field);
-                }
+                //Uncomment this block to use a different regex for name fields
+                //else if (a_index == name_index)
+                //{
+                //    has_error = illegal_name_chars_rx.IsMatch(a_field);
+                //}
                 //uncoment this "else if" block to use a different regex for addresses
                 //
                 //else if (a_index == address_index || a_index == address_index + 1 || a_index == city_index)
